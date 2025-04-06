@@ -1,0 +1,192 @@
+------------------------------------------------------------
+--        Script Postgre 
+------------------------------------------------------------
+-- DROP DATABASE sosborne;
+-- CREATE DATABASE sosborne;
+
+-------------------------------------------------------------
+-- SUPPRESSION DES TABLES
+-------------------------------------------------------------
+-- DROP TABLE availability;
+-- DROP TABLE consumption;
+-- DROP TABLE reservation;
+-- DROP TABLE borne;
+-- DROP TABLE habiter;
+-- DROP TABLE address;
+-- DROP TABLE day;
+-- DROP TABLE connexion;
+-- DROP TABLE users;
+-- DROP TABLE role;
+
+
+
+------------------------------------------------------------
+-- Table: Day
+------------------------------------------------------------
+
+CREATE TABLE day(
+	id   UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	day     VARCHAR (10) NOT NULL  
+);
+
+
+------------------------------------------------------------
+-- Table: Role
+------------------------------------------------------------
+
+CREATE TABLE role(
+	id   UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	name     VARCHAR (10) NOT NULL  
+);
+
+
+------------------------------------------------------------
+-- Table: Users
+------------------------------------------------------------
+
+CREATE TABLE users(
+	id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	password       VARCHAR (50) NOT NULL ,
+	name           VARCHAR (50) NOT NULL ,
+	firstname      VARCHAR (50) NOT NULL ,
+	photoURL       VARCHAR (200)  ,
+	idPieceURL     VARCHAR (200) NOT NULL ,
+	phone          VARCHAR (20) NOT NULL ,
+	creationdate   DATE  NOT NULL ,
+	updatedate     DATE  NOT NULL ,
+	email          VARCHAR (100) NOT NULL ,
+	role_id         UUID  NOT NULL
+
+	,CONSTRAINT Users_AK UNIQUE (email)
+	,CONSTRAINT Users_Role_FK FOREIGN KEY (role_id) REFERENCES role(id)
+);
+
+
+------------------------------------------------------------
+-- Table: Address
+------------------------------------------------------------
+
+CREATE TABLE address(       
+	id     UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	street        VARCHAR (150) NOT NULL ,
+	zipcode       VARCHAR (10) NOT NULL ,
+	town          VARCHAR (100) NOT NULL ,
+	insee         VARCHAR (10)  ,
+	addresslat    FLOAT8   ,
+	addresslong   FLOAT8
+
+);
+
+
+------------------------------------------------------------
+-- Table: borne
+------------------------------------------------------------
+
+CREATE TABLE borne(
+	id      UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	numBorne     INT  DEFAULT 1 NOT NULL ,
+	power        FLOAT8  NOT NULL ,
+	type         VARCHAR (10)  ,
+	taughtName   VARCHAR (50)  ,
+	marketname   VARCHAR (100)  ,
+	public       BOOL  DEFAULT FALSE NOT NULL ,
+	working      BOOL  DEFAULT TRUE NOT NULL ,
+	active       BOOL  DEFAULT TRUE NOT NULL ,
+	nbPoint      INT  DEFAULT 1 NOT NULL ,
+	address_id    UUID  NOT NULL
+
+	,CONSTRAINT borne_Address_FK FOREIGN KEY (address_id) REFERENCES address(id)
+);
+
+
+------------------------------------------------------------
+-- Table: availability
+------------------------------------------------------------
+
+CREATE TABLE availability(
+	id   UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	Beginhour        TIME  NOT NULL ,
+	endhour          TIME  NOT NULL ,
+	kwhPrice         FLOAT8  NOT NULL ,
+	borne_id          UUID  NOT NULL ,
+	day_id            UUID  NOT NULL
+	
+
+	,CONSTRAINT availability_borne_FK FOREIGN KEY (borne_id) REFERENCES borne(id)
+	,CONSTRAINT availability_Day0_FK FOREIGN KEY (day_id) REFERENCES day(id)
+);
+
+
+------------------------------------------------------------
+-- Table: reservation
+------------------------------------------------------------
+
+CREATE TABLE reservation(
+	id   UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	date            DATE  NOT NULL ,
+	beginHour       TIME  NOT NULL ,
+	endhour         TIME  NOT NULL ,
+	user_id          UUID  NOT NULL ,
+	borne_id         UUID  NOT NULL
+
+	,CONSTRAINT reservation_Users_FK FOREIGN KEY (user_id) REFERENCES users(id)
+	,CONSTRAINT reservation_borne0_FK FOREIGN KEY (borne_id) REFERENCES borne(id)
+);
+
+
+------------------------------------------------------------
+-- Table: consumption
+------------------------------------------------------------
+
+CREATE TABLE consumption(
+	id   UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	nbKWH           FLOAT8  NOT NULL ,
+	date            DATE  NOT NULL ,
+	beginhour       TIME  NOT NULL ,
+	endhour         TIME  NOT NULL ,
+	reservation_id   UUID  NOT NULL
+
+	,CONSTRAINT consumption_reservation_FK FOREIGN KEY (reservation_id) REFERENCES reservation(id)
+	,CONSTRAINT consumption_reservation_AK UNIQUE (reservation_id)
+);
+
+
+------------------------------------------------------------
+-- Table: habiter
+------------------------------------------------------------
+
+CREATE TABLE habiter(
+	id  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	address_id   UUID  NOT NULL ,
+	user_id      UUID  NOT NULL
+
+	,CONSTRAINT habiter_Address_FK FOREIGN KEY (address_id) REFERENCES address(id)
+	,CONSTRAINT habiter_Users0_FK FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+
+------------------------------------------------------------
+-- Table: connexion
+------------------------------------------------------------
+
+CREATE TABLE connexion(
+	id   UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	begindate     DATE  NOT NULL ,
+	enddate       DATE  NOT NULL ,
+	user_id        UUID  NOT NULL
+
+	,CONSTRAINT connexion_Users_FK FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
